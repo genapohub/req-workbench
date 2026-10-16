@@ -1,0 +1,324 @@
+/* ============================================================
+   需求智能工作台 v2 · Design Tokens v3.0（唯一事实源）
+   ------------------------------------------------------------
+   视觉基准：Spotify 式设计系统（近黑沉浸 + 单一品牌绿 + 胶囊几何 + 重阴影）
+   品牌延续：v1.4 深绿 → 提亮为功能绿 #1ed760（仅用于强调/主操作/激活态）
+   依据文档：05-UI设计/design-tokens v1.0 + 页面设计契约 v1.0 §8
+   约束：所有颜色/字号/间距/圆角/阴影/动效必须取自本文件，禁止硬编码流浪数值
+   主题策略：v3.0 以深色为默认主题（content-first darkness）；
+            浅色值保留在 [data-theme="light"] 骨架中，可随时切回
+   红线：禁 emoji 图标 / 禁紫粉渐变 / 禁「渐变+发光+毛玻璃」三件套
+   ============================================================ */
+
+:root {
+  color-scheme: dark; /* 让原生滚动条/表单控件同步进入深色 */
+
+  /* ---------- 品牌主色阶（green scale，600 为基准强调色） ---------- */
+  --wb-green-50:  rgba(30, 215, 96, .12);  /* 极浅强调底：追问建议 / 当前行 */
+  --wb-green-100: rgba(30, 215, 96, .16);  /* 选中 / hover 浅底 */
+  --wb-green-200: rgba(30, 215, 96, .24);
+  --wb-green-300: rgba(30, 215, 96, .36);
+  --wb-green-400: #6ce89a;   /* 浅绿文字（弱强调） */
+  --wb-green-500: #3ee07a;   /* hover 提亮 */
+  --wb-green-600: #1ed760;   /* ★ 基准强调色（Spotify Green） */
+  --wb-green-700: #3ee07a;   /* hover / active：深色底上要提亮而非加深 */
+  --wb-green-800: #1db954;   /* 按下 / 深一档 */
+  --wb-green-900: #169c46;   /* 最深档 */
+
+  /* ---------- 中性色阶（近黑沉浸：UI 退进阴影，让内容成为主角） ---------- */
+  --wb-bg:            #121212;   /* 页面底色（Level 0） */
+  --wb-bg-gradient:   radial-gradient(1200px 620px at 18% -12%, rgba(30, 215, 96, .10), transparent 62%), #121212;
+  --wb-surface:       #181818;   /* 卡片 / 侧栏 / 顶栏（Level 1） */
+  --wb-surface-sub:   #1f1f1f;   /* 次级面板 / 表头 / 页脚 */
+  --wb-surface-hover: #282828;   /* 行 / 项 hover（轻微提亮） */
+  --wb-elevated:      #252525;   /* 浮层：下拉 / 气泡 / 菜单 */
+  --wb-border:        #2a2a2a;   /* 常规描边 / 分割线（深色上要极克制） */
+  --wb-border-strong: #4d4d4d;   /* 强调描边 / 外框按钮 */
+  --wb-text-strong:   #ffffff;   /* 标题 */
+  --wb-text:          #ffffff;   /* 正文 */
+  --wb-text-muted:    #b3b3b3;   /* 次要说明（Silver） */
+  --wb-text-disabled: #6f6f6f;   /* 禁用 */
+  --wb-text-inverse:  #ffffff;   /* 深底上的文字 */
+  --wb-on-accent:     #121212;   /* 强调绿底上的文字（黑，Spotify 做法） */
+
+  /* ---------- 语义状态色（深色上用低透明底 + 亮色字） ----------
+     用法约定：红只留给「存在反证 / 不采纳」，避免与「高优先级」混淆 */
+  --wb-good:      #1ed760;  --wb-good-bg:      rgba(30, 215, 96, .14);   --wb-good-border:  rgba(30, 215, 96, .32);
+  --wb-warn:      #ffa42b;  --wb-warn-bg:      rgba(255, 164, 43, .14);  --wb-warn-border:  rgba(255, 164, 43, .32);
+  --wb-bad:       #f3727f;  --wb-bad-bg:       rgba(243, 114, 127, .14); --wb-bad-border:   rgba(243, 114, 127, .32);
+  --wb-info:      #539df5;  --wb-info-bg:      rgba(83, 157, 245, .14);  --wb-info-border:  rgba(83, 157, 245, .32);
+  --wb-neutral:   #b3b3b3;  --wb-neutral-bg:   rgba(255, 255, 255, .06); --wb-neutral-border:rgba(255, 255, 255, .14);
+
+  /* ---------- 字体 ---------- */
+  --wb-font: "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei", -apple-system,
+             BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  --wb-font-num: "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  /* 字阶（Spotify 式紧凑字阶：靠字重而非字号拉开层级） */
+  --wb-fs-xs:      12px;  --wb-lh-xs:      18px;  --wb-fw-xs:      400;  /* 辅助说明 */
+  --wb-fs-sm:      13px;  --wb-lh-sm:      20px;  --wb-fw-sm:      400;  /* 表格 / 次要 */
+  --wb-fs-base:    14px;  --wb-lh-base:    22px;  --wb-fw-base:    400;  /* 正文 */
+  --wb-fs-lg:      16px;  --wb-lh-lg:      24px;  --wb-fw-lg:      600;  /* 区块标题 */
+  --wb-fs-xl:      18px;  --wb-lh-xl:      26px;  --wb-fw-xl:      600;
+  --wb-fs-2xl:     20px;  --wb-lh-2xl:     28px;  --wb-fw-2xl:     700;
+  --wb-fs-3xl:     24px;  --wb-lh-3xl:     32px;  --wb-fw-3xl:     700;
+  --wb-fs-metric:  30px;  --wb-lh-metric:  36px;  --wb-fw-metric:  700;  /* 指标数字 */
+
+  /* ---------- 间距（8px 基准 + 4px 补充） ---------- */
+  --wb-sp-1: 4px;   --wb-sp-2: 8px;   --wb-sp-3: 12px;  --wb-sp-4: 16px;
+  --wb-sp-5: 20px;  --wb-sp-6: 24px;  --wb-sp-8: 32px;  --wb-sp-10: 40px;
+  --wb-sp-12: 48px;
+
+  /* ---------- 圆角（胶囊为主：按钮 999px / 卡片 8px / 头像 50%） ---------- */
+  --wb-radius-xs:  4px;    /* tag / 输入框 / 小控件 */
+  --wb-radius-sm:  6px;    /* 内嵌块 */
+  --wb-radius-md:  8px;    /* 卡片 / 面板 */
+  --wb-radius-lg:  12px;   /* 弹窗 / 抽屉 */
+  --wb-radius-pill: 999px; /* 按钮 / 搜索框 / 徽章 */
+
+  /* ---------- 阴影（深色上必须重，否则看不见） ---------- */
+  --wb-shadow-xs: 0 1px 2px rgba(0, 0, 0, .40);
+  --wb-shadow-sm: 0 2px 8px rgba(0, 0, 0, .30);   /* 卡片 / 下拉 */
+  --wb-shadow-md: 0 8px 8px rgba(0, 0, 0, .30);   /* 悬浮卡片 */
+  --wb-shadow-lg: 0 8px 24px rgba(0, 0, 0, .50);  /* 弹窗 / 抽屉 / 菜单 */
+
+  /* ---------- 动效（禁弹跳 / 回弹缓动） ---------- */
+  --wb-ease: cubic-bezier(.4, 0, .2, 1);
+  --wb-dur-fast: 120ms;
+  --wb-dur-base: 200ms;
+  --wb-dur-slow: 280ms;
+
+  /* ---------- 焦点环（键盘可达，深色上用亮绿外光） ---------- */
+  --wb-focus-ring: 0 0 0 3px rgba(30, 215, 96, .30);
+  --wb-focus-border: var(--wb-green-600);
+
+  /* ---------- 布局尺寸 ---------- */
+  --wb-sidebar-w:  224px;
+  --wb-sidebar-w-collapsed: 64px;
+  --wb-topbar-h:   56px;   /* 契约 §0：顶栏 56px */
+  --wb-content-pad: 20px;  /* 契约 §0：主内容区内边距 20px */
+  --wb-drawer-w:   560px;  /* 契约 §5：需求详情抽屉 560px */
+  --wb-content-max: 1280px;
+  --wb-z-drawer: 2000;
+  --wb-z-dialog: 2100;
+  --wb-z-toast: 3000;
+
+  /* ============================================================
+     Element Plus 变量覆盖（深色沉浸 + 绿色强调）
+     ============================================================ */
+  --el-color-primary:              #1ed760;
+  --el-color-primary-light-3:      #3ee07a;
+  --el-color-primary-light-5:      #6ce89a;
+  --el-color-primary-light-7:      rgba(30, 215, 96, .32);
+  --el-color-primary-light-8:      rgba(30, 215, 96, .22);
+  --el-color-primary-light-9:      rgba(30, 215, 96, .14);
+  --el-color-primary-dark-2:       #1db954;
+
+  /* 语义色：映射到 Spotify 语义色 */
+  --el-color-success:              #1ed760;
+  --el-color-success-light-3:      #3ee07a;
+  --el-color-success-light-5:      #6ce89a;
+  --el-color-success-light-7:      rgba(30, 215, 96, .32);
+  --el-color-success-light-8:      rgba(30, 215, 96, .22);
+  --el-color-success-light-9:      rgba(30, 215, 96, .14);
+  --el-color-success-dark-2:       #1db954;
+
+  --el-color-warning:              #ffa42b;
+  --el-color-warning-light-3:      #ffb85c;
+  --el-color-warning-light-5:      #ffca8c;
+  --el-color-warning-light-7:      rgba(255, 164, 43, .32);
+  --el-color-warning-light-8:      rgba(255, 164, 43, .22);
+  --el-color-warning-light-9:      rgba(255, 164, 43, .14);
+  --el-color-warning-dark-2:       #e08e1c;
+
+  --el-color-danger:               #f3727f;
+  --el-color-danger-light-3:       #f68f99;
+  --el-color-danger-light-5:       #f9adb4;
+  --el-color-danger-light-7:       rgba(243, 114, 127, .32);
+  --el-color-danger-light-8:       rgba(243, 114, 127, .22);
+  --el-color-danger-light-9:       rgba(243, 114, 127, .14);
+  --el-color-danger-dark-2:        #d95b68;
+
+  --el-color-error:                #f3727f;
+  --el-color-error-light-3:        #f68f99;
+  --el-color-error-light-5:        #f9adb4;
+  --el-color-error-light-7:        rgba(243, 114, 127, .32);
+  --el-color-error-light-8:        rgba(243, 114, 127, .22);
+  --el-color-error-light-9:        rgba(243, 114, 127, .14);
+  --el-color-error-dark-2:         #d95b68;
+
+  --el-color-info:                 #539df5;
+  --el-color-info-light-3:         #77b2f7;
+  --el-color-info-light-5:         #9dc7fa;
+  --el-color-info-light-7:         rgba(83, 157, 245, .32);
+  --el-color-info-light-8:         rgba(83, 157, 245, .22);
+  --el-color-info-light-9:         rgba(83, 157, 245, .14);
+  --el-color-info-dark-2:          #3b86e0;
+
+  /* 文本与描边（深色） */
+  --el-text-color-primary:         #ffffff;
+  --el-text-color-regular:         #ffffff;
+  --el-text-color-secondary:       #b3b3b3;
+  --el-text-color-placeholder:     #6f6f6f;
+  --el-text-color-disabled:        #6f6f6f;
+  --el-border-color:               #2a2a2a;
+  --el-border-color-light:         #2a2a2a;
+  --el-border-color-lighter:       #232323;
+  --el-border-color-extra-light:   #1c1c1c;
+  --el-border-color-dark:          #3d3d3d;
+  --el-border-color-darker:        #4d4d4d;
+  --el-fill-color:                 #2a2a2a;
+  --el-fill-color-light:           #232323;
+  --el-fill-color-lighter:         #1c1c1c;
+  --el-fill-color-blank:           #181818;
+  --el-bg-color:                   #181818;
+  --el-bg-color-page:              #121212;
+  --el-bg-color-overlay:           #1f1f1f;
+  --el-overlay-color-lighter:      rgba(0, 0, 0, .70); /* 遮罩：保持沉浸 */
+
+  /* 尺寸与圆角 */
+  --el-font-size-extra-large:      18px;
+  --el-font-size-large:            16px;
+  --el-font-size-medium:           14px;
+  --el-font-size-base:             14px;
+  --el-font-size-small:            13px;
+  --el-font-size-extra-small:      12px;
+  --el-font-family:                var(--wb-font);
+  --el-border-radius-base:         4px;
+  --el-border-radius-small:        4px;
+  --el-border-radius-round:        999px;
+  --el-component-size:             32px;
+  --el-component-size-small:       28px;
+  --el-component-size-large:       40px;
+
+  --el-box-shadow:                 0 8px 24px rgba(0, 0, 0, .50);
+  --el-box-shadow-light:           0 2px 8px rgba(0, 0, 0, .30);
+  --el-box-shadow-lighter:         0 1px 2px rgba(0, 0, 0, .40);
+  --el-box-shadow-dark:            0 8px 24px rgba(0, 0, 0, .60);
+
+  --el-transition-duration:        200ms;
+  --el-transition-duration-fast:   120ms;
+}
+
+/* ============================================================
+   浅色主题骨架：默认不启用（v3.0 以深色为默认）
+   需要时给 <html data-theme="light"> 即可切回，组件代码零改动
+   ============================================================ */
+[data-theme="light"] {
+  color-scheme: light;
+  --wb-bg:            #f4f6f5;
+  --wb-surface:       #ffffff;
+  --wb-surface-sub:   #fafbfa;
+  --wb-surface-hover: #f2f5f3;
+  --wb-border:        #e4e9e7;
+  --wb-border-strong: #d3dbd7;
+  --wb-text-strong:   #1f2a26;
+  --wb-text:          #33413c;
+  --wb-text-muted:    #66746f;
+  --wb-text-disabled: #9aa5a0;
+  --wb-on-accent:     #ffffff;
+  --wb-green-600:     #245647;
+  --wb-green-700:     #1d4639;
+  --wb-shadow-xs:     0 1px 2px rgba(26, 54, 43, .05);
+}
+
+/* ============================================================
+   基础重置与全局基类
+   ============================================================ */
+* { box-sizing: border-box; }
+
+html, body, #app { height: 100%; margin: 0; }
+
+body {
+  font-family: var(--wb-font);
+  font-size: var(--wb-fs-base);
+  line-height: var(--wb-lh-base);
+  color: var(--wb-text);
+  background: var(--wb-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a { color: var(--wb-green-600); text-decoration: none; }
+a:hover { color: var(--wb-green-700); }
+
+/* 统一焦点可见性：键盘可达，鼠标不干扰 */
+:focus-visible {
+  outline: 2px solid var(--wb-green-600);
+  outline-offset: 2px;
+  border-radius: var(--wb-radius-xs);
+}
+
+/* ---------- 通用文本工具类 ---------- */
+.wb-muted        { color: var(--wb-text-muted); }
+.wb-text-strong  { color: var(--wb-text-strong); font-weight: 600; }
+.wb-num          { font-family: var(--wb-font-num); font-variant-numeric: tabular-nums; }
+
+/* ---------- 通用面板（供轻量场景直接复用；复杂场景请用 PanelCard 组件） ---------- */
+.wb-panel {
+  background: var(--wb-surface);
+  border: 1px solid var(--wb-border);
+  border-radius: var(--wb-radius-md);
+  box-shadow: var(--wb-shadow-xs);
+}
+
+/* ---------- 表格工具条（搜索 / 筛选 / 密度 / 列设置） ----------
+   主流后台标配：筛选区与表格同处一个容器，但用浅底 + 下边框分隔，
+   不与卡片头、页面级筛选混为同一级 */
+.wb-table-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--wb-sp-2);
+  flex-wrap: wrap;
+  padding: var(--wb-sp-3) var(--wb-sp-5);
+  border-bottom: 1px solid var(--wb-border);
+  background: var(--wb-surface);
+}
+
+.wb-table-toolbar__spacer { flex: 1 1 auto; }
+
+.wb-table-toolbar__count {
+  font-size: var(--wb-fs-xs);
+  color: var(--wb-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 列设置：复选项单列排布，避免 popover 内拥挤 */
+.wb-col-item {
+  display: flex;
+  align-items: center;
+  height: 28px;
+}
+
+/* 抽屉底栏：主操作右对齐，与弹窗 footer 一致 */
+.wb-drawer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--wb-sp-2);
+}
+
+/* 窄屏：工具条控件占满一行，避免挤压成两三个像素宽 */
+@media (max-width: 720px) {
+  .wb-table-toolbar { padding: var(--wb-sp-3) var(--wb-sp-4); }
+  .wb-table-toolbar :deep(.el-input),
+  .wb-table-toolbar :deep(.el-select) { width: 100% !important; }
+}
+
+/* ---------- 滚动条：深色上的细窄样式 ---------- */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: #3d3d3d;
+  border-radius: var(--wb-radius-pill);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--wb-border-strong); }
+
+/* ---------- 尊重「减少动效」系统偏好 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

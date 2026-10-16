@@ -1,0 +1,254 @@
+/* ============================================================
+   Element Plus 全局样式覆盖
+   ------------------------------------------------------------
+   为什么单独放全局：el-dialog / el-drawer / el-message 会 teleport 到 body，
+   组件的 scoped 样式无法命中，必须在此统一，否则弹窗圆角、头部间距
+   会与卡片体系不一致。
+   原则：优先改 CSS 变量，其次才写选择器；避免硬编码色值。
+   ============================================================ */
+
+/* ---------- 弹窗 ---------- */
+.el-dialog {
+  border-radius: var(--wb-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--wb-shadow-lg);
+}
+.el-dialog__header {
+  padding: var(--wb-sp-4) var(--wb-sp-5);
+  margin: 0;
+  border-bottom: 1px solid var(--wb-border);
+}
+.el-dialog__title {
+  font-size: var(--wb-fs-lg);
+  line-height: var(--wb-lh-lg);
+  font-weight: var(--wb-fw-lg);
+  color: var(--wb-text-strong);
+}
+.el-dialog__headerbtn { top: 12px; right: 12px; }
+.el-dialog__body {
+  padding: var(--wb-sp-5);
+  color: var(--wb-text);
+  font-size: var(--wb-fs-base);
+}
+.el-dialog__footer {
+  padding: var(--wb-sp-3) var(--wb-sp-5);
+  border-top: 1px solid var(--wb-border);
+  background: var(--wb-surface-sub);
+}
+
+/* ---------- 抽屉（需求详情） ---------- */
+.el-drawer {
+  border-radius: var(--wb-radius-lg) 0 0 var(--wb-radius-lg);
+  box-shadow: var(--wb-shadow-lg);
+}
+.el-drawer__header {
+  padding: var(--wb-sp-4) var(--wb-sp-5);
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--wb-border);
+}
+.el-drawer__title {
+  font-size: var(--wb-fs-lg);
+  line-height: var(--wb-lh-lg);
+  font-weight: var(--wb-fw-lg);
+  color: var(--wb-text-strong);
+}
+.el-drawer__body { padding: var(--wb-sp-5); }
+
+/* ---------- 按钮 ----------
+   Spotify 几何：实心 / 描边按钮一律胶囊（999px）；
+   表格内的文字按钮保持小圆角，避免密集列表里冒出一堆药丸 */
+.el-button {
+  font-weight: 600;
+  letter-spacing: .02em;
+  transition:
+    background-color var(--wb-dur-fast) var(--wb-ease),
+    border-color var(--wb-dur-fast) var(--wb-ease),
+    color var(--wb-dur-fast) var(--wb-ease);
+}
+
+.el-button:not(.is-text):not(.is-link) {
+  border-radius: var(--wb-radius-pill);
+}
+
+/* 主按钮：绿底 + 黑字（Spotify 做法；白字在亮绿上对比度不足） */
+.el-button--primary {
+  --el-button-text-color: var(--wb-on-accent);
+  color: var(--wb-on-accent);
+  font-weight: 700;
+  border-color: transparent;
+  box-shadow: var(--wb-shadow-sm);
+}
+.el-button--primary:hover,
+.el-button--primary:focus {
+  color: var(--wb-on-accent);
+  background-color: #3ee07a;
+  border-color: #3ee07a;
+}
+.el-button--primary:active {
+  color: var(--wb-on-accent);
+  background-color: #1db954;
+  border-color: #1db954;
+}
+.el-button--primary.is-disabled,
+.el-button--primary.is-disabled:hover {
+  color: rgba(18, 18, 18, .45);
+  background-color: rgba(30, 215, 96, .35);
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* 文字按钮：对齐主流后台「操作列 = 主题色链接」的惯例，
+   深色底上静默态即用品牌绿提升扫读性，hover 提亮一档 + 浅绿底 */
+.el-button.is-link,
+.el-button.is-text {
+  color: var(--wb-green-600);
+}
+.el-button.is-link:hover,
+.el-button.is-text:hover {
+  background: var(--wb-green-50);
+  color: var(--wb-green-700);
+}
+/* 危险文字按钮保持红色语义 */
+.el-button.is-text.el-button--danger { color: var(--wb-bad); }
+.el-button.is-text.el-button--danger:hover {
+  background: var(--wb-bad-bg);
+  color: var(--wb-bad);
+}
+
+/* ---------- 表单控件 ---------- */
+.el-input__wrapper,
+.el-textarea__inner {
+  border-radius: var(--wb-radius-sm);
+  transition: box-shadow var(--wb-dur-fast) var(--wb-ease);
+}
+/* focus 用「边框色 + 外光晕」双信号，兼顾色觉障碍用户 */
+.el-input__wrapper.is-focus,
+.el-textarea__inner:focus,
+.el-select__wrapper.is-focused {
+  box-shadow:
+    0 0 0 1px var(--el-color-primary) inset,
+    var(--wb-focus-ring) !important;
+}
+.el-form-item__label {
+  color: var(--wb-text);
+  font-size: var(--wb-fs-sm);
+  font-weight: 500;
+}
+/* 输入框 placeholder 不要过浅（对比度过低会不及格） */
+.el-input__inner::placeholder,
+.el-textarea__inner::placeholder { color: var(--wb-text-disabled); }
+
+/* ---------- 表格（全局兜底，主要样式在 DataTable 组件内） ---------- */
+.el-table {
+  --el-table-header-bg-color: var(--wb-surface-sub);
+  --el-table-header-text-color: var(--wb-text-strong);
+  --el-table-row-hover-bg-color: var(--wb-surface-hover);
+  --el-table-border-color: var(--wb-border);
+  font-size: var(--wb-fs-sm);
+}
+.el-table th.el-table__cell { font-weight: 600; }
+
+/* ---------- 标签（保留 EP tag 用于角色等多值场景） ---------- */
+.el-tag {
+  border-radius: var(--wb-radius-xs);
+  font-weight: 500;
+}
+
+/* ---------- 提示与消息 ---------- */
+.el-alert { border-radius: var(--wb-radius-sm); }
+.el-alert__title { font-size: var(--wb-fs-sm); }
+.el-message {
+  border-radius: var(--wb-radius-sm);
+  box-shadow: var(--wb-shadow-md);
+}
+.el-message-box {
+  border-radius: var(--wb-radius-lg);
+  overflow: hidden;
+}
+
+/* ---------- 下拉菜单 ---------- */
+.el-dropdown-menu {
+  border-radius: var(--wb-radius-sm);
+  padding: var(--wb-sp-1);
+  box-shadow: var(--wb-shadow-md);
+}
+.el-dropdown-menu__item {
+  border-radius: var(--wb-radius-xs);
+  font-size: var(--wb-fs-sm);
+  line-height: 28px;
+}
+
+/* ---------- 进度条（挖掘深度） ---------- */
+.el-progress-bar__outer { background: var(--wb-border); border-radius: var(--wb-radius-pill); }
+.el-progress-bar__inner { border-radius: var(--wb-radius-pill); background: var(--wb-green-600); }
+
+/* ---------- 单选按钮组（列表/需求池/看板切换） ---------- */
+.el-radio-group { border-radius: var(--wb-radius-sm); }
+.el-radio-button__inner {
+  font-size: var(--wb-fs-sm);
+  transition: all var(--wb-dur-fast) var(--wb-ease);
+}
+
+/* ---------- 时间线 ---------- */
+.el-timeline-item__timestamp { color: var(--wb-text-muted); font-size: var(--wb-fs-xs); }
+.el-timeline-item__node { background: var(--wb-green-600); }
+
+/* ---------- 描述列表（工作概览分布） ---------- */
+.el-descriptions__label { color: var(--wb-text-muted); font-weight: 500; }
+.el-descriptions__content { color: var(--wb-text); }
+
+/* ---------- 加载遮罩（深色：用近黑而非白） ---------- */
+.el-loading-mask { background-color: rgba(18, 18, 18, .72); }
+.el-loading-spinner .path { stroke: var(--wb-green-600); }
+.el-loading-spinner .el-loading-text { color: var(--wb-text-muted); }
+
+/* ---------- 深色细节补强（EP 默认按浅色设计，深色需显式修正） ---------- */
+/* 搜索框：Spotify 式胶囊输入 */
+.wb-table-toolbar .el-input__wrapper {
+  border-radius: var(--wb-radius-pill);
+  padding-left: var(--wb-sp-3);
+}
+
+/* 表格：去掉外框，靠底色差与细分割线建立层级 */
+.el-table::before { display: none; }
+.el-table--border .el-table__inner-wrapper::after { display: none; }
+
+/* 下拉/气泡：浮层用 elevated 底色 + 重阴影 */
+.el-popover.el-popper,
+.el-dropdown-menu,
+.el-select__popper.el-popper {
+  background: var(--wb-elevated);
+  border-color: var(--wb-border-strong);
+  box-shadow: var(--wb-shadow-lg);
+}
+
+/* 弹出框箭头同步深色 */
+.el-popper.is-light > .el-popper__arrow::before {
+  background: var(--wb-elevated);
+  border-color: var(--wb-border-strong);
+}
+
+/* 单选按钮组（视图切换）：深色上用 lighter 底而非白 */
+.el-radio-button__inner {
+  background: var(--wb-surface-sub);
+  border-color: var(--wb-border);
+  color: var(--wb-text-muted);
+}
+.el-radio-button__original-radio:checked + .el-radio-button__inner {
+  background: var(--wb-green-600);
+  border-color: var(--wb-green-600);
+  color: var(--wb-on-accent);
+  box-shadow: none;
+  font-weight: 600;
+}
+
+/* 进度条底槽：深色上要更亮一点才看得见 */
+.el-progress-bar__outer { background: rgba(255, 255, 255, .10); }
+
+/* 时间线节点与文字 */
+.el-timeline-item__node { background: var(--wb-green-600); }
+.el-timeline-item__tail { border-left-color: var(--wb-border); }
+
+/* 分割线与描述列表 */
+.el-divider { border-color: var(--wb-border); }
+.el-descriptions__label { color: var(--wb-text-muted); }

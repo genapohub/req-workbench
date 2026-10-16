@@ -1,0 +1,31 @@
+# 依赖
+node_modules/
+.venv/
+venv/
+env/
+
+# 构建产物
+dist/
+build/
+*.egg-info/
+
+# Python
+__pycache__/
+*.pyc
+*.py[cod]
+
+# 编辑器 / 系统
+.idea/
+.vscode/
+.DS_Store
+
+# 运行数据 / 数据库
+*.sqlite3
+*.db
+运行数据/
+
+# 日志
+*.log
+
+# AI 协作记忆（含个人笔记，不入库）
+.workbuddy/

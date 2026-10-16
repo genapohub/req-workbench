@@ -1,0 +1,111 @@
+// ============================================================
+// 需求智能工作台 v2 · Design Tokens v3.0（唯一事实源）
+// ------------------------------------------------------------
+// 版本：v1.0（飞书浅色） → v3.0（Spotify 式深色沉浸，2026-10-01）
+// 运行态副本：06-项目编码/v2/frontend/src/styles/tokens.css（以该文件为准）
+// 约束：颜色/间距/圆角/阴影一律取自本文件；禁止组件里硬编码色值
+// 红线：禁 emoji 图标 / 禁紫粉渐变 / 禁渐变+发光+毛玻璃三件套
+// 换肤机制：只改取值、不改变量名 → 组件代码零改动
+// ============================================================
+
+:root {
+  color-scheme: dark; // 原生滚动条 / 表单控件同步进入深色
+
+  // ---------- 品牌主色（功能绿 #1ed760，绿底用黑字） ----------
+  --brand-primary: #1ed760;         // ★ 强调色：主按钮 / 激活态 / 链接
+  --brand-primary-hover: #3ee07a;   // 深色底上 hover 要提亮
+  --brand-primary-active: #1db954;  // 按下 / 深一档
+  --brand-soft: rgba(30, 215, 96, .16); // 选中 / hover 浅底
+  --brand-on-accent: #121212;       // 绿底上的文字（黑）
+
+  // ---------- Element Plus 主色全系列覆盖 ----------
+  --el-color-primary: #1ed760;
+  --el-color-primary-dark-2: #1db954;
+  --el-color-primary-light-3: #3ee07a;
+  --el-color-primary-light-5: #6ce89a;
+  --el-color-primary-light-7: rgba(30, 215, 96, .32);
+  --el-color-primary-light-8: rgba(30, 215, 96, .22);
+  --el-color-primary-light-9: rgba(30, 215, 96, .14);
+
+  // ---------- 中性色（近黑沉浸：UI 退进阴影，内容成为主角） ----------
+  --color-bg: #121212;              // 页面背景（Level 0）
+  --color-surface: #181818;         // 卡片 / 侧栏 / 顶栏（Level 1）
+  --color-panel: #1f1f1f;           // 次级面板 / 表头
+  --color-elevated: #252525;        // 浮层：下拉 / 气泡 / 菜单
+  --color-line: #2a2a2a;            // 分割线 / 描边
+  --color-line-strong: #4d4d4d;     // 强调描边 / 外框按钮
+  --text-strong: #ffffff;           // 标题
+  --text-default: #ffffff;          // 正文
+  --text-muted: #b3b3b3;            // 次要说明（Silver）
+  --text-disabled: #6f6f6f;         // 禁用
+  --text-inverse: #ffffff;
+
+  // ---------- 语义状态色（深底上用低透明底 + 亮色字） ----------
+  --status-good: #1ed760;  --status-good-bg: rgba(30, 215, 96, .14);
+  --status-warn: #ffa42b;  --status-warn-bg: rgba(255, 164, 43, .14);
+  --status-bad: #f3727f;   --status-bad-bg: rgba(243, 114, 127, .14);
+  --status-info: #539df5;  --status-info-bg: rgba(83, 157, 245, .14);
+  --el-color-success: #1ed760;
+  --el-color-warning: #ffa42b;
+  --el-color-danger: #f3727f;
+  --el-color-info: #539df5;
+
+  // ---------- 字体层级（紧凑字阶：靠字重而非字号拉开层级） ----------
+  --font-family: "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --fs-page-title: 20px;   --lh-page-title: 28px;   --fw-page-title: 700;
+  --fs-section-title: 16px;--lh-section-title: 24px;--fw-section-title: 600;
+  --fs-body: 14px;         --lh-body: 22px;
+  --fs-aux: 12px;          --lh-aux: 18px;
+
+  // ---------- 间距基准（8 的倍数 + 4px 补充） ----------
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 20px; --sp-6: 24px; --sp-8: 32px;
+
+  // ---------- 圆角（胶囊为主） ----------
+  --radius-sm: 4px;        // 输入框 / 小控件 / tag
+  --radius-md: 8px;        // 卡片 / 面板
+  --radius-lg: 12px;       // 抽屉 / 弹窗
+  --radius-pill: 999px;    // 按钮 / 搜索框 / 徽章
+  --el-border-radius-base: 4px;
+
+  // ---------- 阴影（深色上必须重，否则看不见） ----------
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, .30);
+  --shadow-md: 0 8px 8px rgba(0, 0, 0, .30);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, .50);
+
+  // ---------- 焦点环 ----------
+  --focus-ring: 0 0 0 3px rgba(30, 215, 96, .30);
+
+  // ---------- 动效（禁弹跳弹性缓动） ----------
+  --motion-fast: 120ms cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-drawer: 280ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  // ---------- 布局尺寸 ----------
+  --sidebar-width: 224px;
+  --sidebar-width-collapsed: 64px;
+  --topbar-height: 56px;
+  --drawer-width: 560px;            // 需求详情右抽屉（契约 §5）
+  --content-max-width: 1280px;
+}
+
+// 浅色主题骨架：默认不启用；给 <html data-theme="light"> 即切回，组件零改动
+[data-theme="light"] {
+  color-scheme: light;
+  --brand-primary: #245647;
+  --brand-primary-hover: #1d4639;
+  --brand-on-accent: #ffffff;
+  --color-bg: #f4f6f5;
+  --color-surface: #ffffff;
+  --color-panel: #fafbfa;
+  --color-elevated: #ffffff;
+  --color-line: #e4e9e7;
+  --text-strong: #1f2a26;
+  --text-default: #33413c;
+  --text-muted: #66746f;
+  --status-good: #245647;  --status-good-bg: #e8f0eb;
+  --status-warn: #8a641f;  --status-warn-bg: #f6efdf;
+  --status-bad: #a0443e;   --status-bad-bg: #f6e7e6;
+  --status-info: #315d84;  --status-info-bg: #e6edf3;
+  --shadow-sm: 0 1px 2px rgba(26, 54, 43, .05);
+}

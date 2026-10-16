@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<!-- translate="no" + notranslate：阻止翻译类扩展（沉浸式翻译/Google 翻译等）
+     在 Vue 挂载/更新期间改写文本节点，避免 "insertBefore ... not a child of this node" 崩溃 -->
+<html lang="zh-CN" translate="no">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="google" content="notranslate" />
+    <!-- 内联 SVG favicon：品牌绿底，消除 /favicon.ico 404 噪音 -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23245647'/%3E%3Ctext x='16' y='22' font-size='15' font-family='sans-serif' fill='%23ffffff' text-anchor='middle'%3E%E9%9C%80%3C/text%3E%3C/svg%3E" />
+    <title>需求智能工作台 v2</title>
+  </head>
+  <body class="notranslate">
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

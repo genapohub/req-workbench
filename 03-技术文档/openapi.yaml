@@ -1,0 +1,105 @@
+openapi: 3.0.3
+info:
+  title: 需求智能工作台 v2 API
+  version: "1.0.0"
+servers:
+  - url: http://127.0.0.1:8012/api
+paths:
+  /healthz:
+    get:
+      summary: 健康检查
+      responses:
+        '200': { description: ok }
+  /auth/login:
+    post:
+      summary: 登录
+      responses:
+        '200': { description: ok }
+  /auth/logout:
+    post:
+      summary: 退出
+      responses:
+        '200': { description: ok }
+  /auth/me:
+    get:
+      summary: 当前用户、权限和菜单
+      responses:
+        '200': { description: ok }
+  /dashboard:
+    get:
+      summary: 工作概览
+      responses:
+        '200': { description: ok }
+  /projects:
+    get:
+      summary: 基座信息列表
+      responses:
+        '200': { description: ok }
+    post:
+      summary: 新建基座信息
+      responses:
+        '200': { description: ok }
+  /projects/{id}:
+    put:
+      summary: 编辑基座信息
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: ok }
+  /requirements:
+    get:
+      summary: 需求列表
+      responses:
+        '200': { description: ok }
+    post:
+      summary: 提交用户原话
+      responses:
+        '200': { description: ok }
+  /requirements/{id}:
+    get:
+      summary: 需求详情
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: ok }
+    patch:
+      summary: 更新判断和评审结论
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: ok }
+  /requirements/{id}/clarifications:
+    post:
+      summary: 补充追问
+      responses:
+        '200': { description: ok }
+  /requirements/{id}/evidence:
+    post:
+      summary: 补充证据或反证
+      responses:
+        '200': { description: ok }
+  /requirements/{id}/analyze:
+    post:
+      summary: 智能挖掘与辨伪
+      responses:
+        '200': { description: ok }
+  /requirements/{id}/deep-dive:
+    post:
+      summary: 生成深挖建议
+      responses:
+        '200': { description: ok }
+  /requirements/{id}/export.md:
+    get:
+      summary: 导出需求卡 Markdown
+      responses:
+        '200': { description: markdown }
+components: {}
