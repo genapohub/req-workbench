@@ -32,7 +32,7 @@ AI 用在了**开发流程与人机边界设计**上（让 AI 按契约写代码
 |---|---|
 | 后端 | FastAPI + SQLAlchemy + SQLite（可切 MySQL/PostgreSQL） |
 | 前端 | Vue 3 + Vite + Element Plus |
-| 前端 Mock | MSW（Mock Service Worker），镜像后端算法，演示环境可脱离后端运行 |
+| 前端 Mock | 不依赖后端即可演示前端 UI（Mock Service Worker） |
 | 测试 | pytest（后端 17 项） |
 
 规模：**23 个接口 / 5 张表 / 约 6900 行代码**。
