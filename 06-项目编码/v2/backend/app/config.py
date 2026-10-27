@@ -32,6 +32,7 @@ PERMISSIONS: dict[str, str] = {
     "requirements.export": "需求导出",
     "users.view": "查看账号",
     "users.manage": "管理账号",
+    "audit.view": "查看审计日志",
 }
 
 MENUS = [

@@ -9,6 +9,7 @@ from app.database import db, row, rows, put, delete
 from app.deps import require_perm, hash_password, public_user
 from app.resp import ok, fail
 from app.schemas import UserIn, UserPatch
+from app.audit import record as audit, changed_fields
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -51,6 +52,8 @@ def create_user(body: UserIn, user: dict = Depends(require_perm("users.manage"))
             "updated_by": user.get("id"),
         }
         put(conn, "users", item)
+        audit(conn, "users.create", user=user, target_type="user", target_id=item["id"],
+              detail={"username": username, "name": name, "role_ids": item["role_ids"]})
     data = public_user(item)
     if not body.password:
         data["initial_password"] = initial_password
@@ -64,6 +67,9 @@ def update_user(user_id: str, body: UserPatch, user: dict = Depends(require_perm
         if not item:
             return fail(2001, "账号不存在", 404)
         data = body.model_dump(exclude_none=True)
+        diff = changed_fields(item, {k: v for k, v in data.items() if k != "password"})
+        if "password" in data:
+            diff["password"] = ["（旧密码）", "（已重置）"]
         if "username" in data:
             data["username"] = data["username"].strip()
             if not data["username"]:
@@ -85,6 +91,8 @@ def update_user(user_id: str, body: UserPatch, user: dict = Depends(require_perm
         item["updated_at"] = now()
         item["updated_by"] = user.get("id")
         put(conn, "users", item)
+        audit(conn, "users.update", user=user, target_type="user", target_id=user_id,
+              detail={"username": item.get("username"), "changed": diff})
     return ok(public_user(item))
 
 
@@ -93,7 +101,10 @@ def delete_user(user_id: str, user: dict = Depends(require_perm("users.manage"))
     if user_id == user.get("id"):
         return fail(3001, "不能删除当前登录账号", 422)
     with db() as conn:
-        if not row(conn, "users", user_id):
+        target = row(conn, "users", user_id)
+        if not target:
             return fail(2001, "账号不存在", 404)
         delete(conn, "users", user_id)
+        audit(conn, "users.delete", user=user, target_type="user", target_id=user_id,
+              detail={"username": target.get("username"), "name": target.get("name")})
     return ok({"id": user_id})

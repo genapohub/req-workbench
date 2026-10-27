@@ -7,6 +7,7 @@ from app.database import db, row, rows, put
 from app.deps import require_perm
 from app.resp import ok, fail
 from app.schemas import ProjectIn
+from app.audit import record as audit, changed_fields
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
@@ -52,6 +53,8 @@ def create_project(body: ProjectIn, user: dict = Depends(require_perm("projects.
     item["name"] = body.name.strip()
     with db() as conn:
         put(conn, "projects", item)
+        audit(conn, "projects.create", user=user, target_type="project", target_id=item["id"],
+              detail={"name": item["name"]})
     return ok(enrich_project(item))
 
 
@@ -61,10 +64,14 @@ def update_project(pid: str, body: ProjectIn, user: dict = Depends(require_perm(
         item = row(conn, "projects", pid)
         if not item:
             return fail(2001, "项目不存在", 404)
-        for k, v in body.model_dump(exclude_none=True).items():
+        patch = body.model_dump(exclude_none=True)
+        diff = changed_fields(item, patch)
+        for k, v in patch.items():
             item[k] = v
         item["name"] = item.get("name", "").strip()
         item["updated_at"] = now()
         item["updated_by"] = user.get("id")
         put(conn, "projects", item)
+        audit(conn, "projects.update", user=user, target_type="project", target_id=pid,
+              detail={"name": item.get("name"), "changed": diff})
     return ok(enrich_project(item))

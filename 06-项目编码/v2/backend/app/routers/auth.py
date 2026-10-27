@@ -9,6 +9,7 @@ from app.database import db, row, rows, delete, put
 from app.deps import verify_password, hash_password, create_session, get_session_user, role_permissions, public_user
 from app.resp import ok, fail
 from app.schemas import LoginIn, ChangePasswordIn
+from app.audit import record as audit
 
 logger = logging.getLogger("workbench.auth")
 
@@ -49,11 +50,14 @@ def login(body: LoginIn):
         user = _find_user_by_username(conn, body.username)
         if not user or not verify_password(body.password, user.get("password", "")):
             _record_failure(body.username)
+            audit(conn, "auth.login_failed", username=body.username)
             return fail(1002, "账号或密码错误", 401)
         if user.get("status") == "disabled":
+            audit(conn, "auth.login_failed", username=body.username, detail={"reason": "账号已禁用"})
             return fail(1003, "账号已禁用", 403)
         _login_failures.pop(body.username, None)
         sid, expires = create_session(conn, user["id"])
+        audit(conn, "auth.login", user=user)
     resp = ok({"token": sid, "user": public_user(user)})
     resp.set_cookie(
         COOKIE, sid, httponly=True, samesite="lax",
@@ -67,6 +71,10 @@ def logout(request: Request):
     sid = request.cookies.get(COOKIE)
     if sid:
         with db() as conn:
+            s = row(conn, "sessions", sid)
+            if s:
+                u = row(conn, "users", s["user_id"])
+                audit(conn, "auth.logout", user=u, username=s["user_id"])
             delete(conn, "sessions", sid)
     resp = ok({})
     resp.delete_cookie(COOKIE, path="/")
@@ -116,5 +124,6 @@ def change_password(request: Request, body: ChangePasswordIn):
         for s in rows(conn, "sessions"):
             if s.get("user_id") == user["id"] and s.get("id") != current_sid:
                 delete(conn, "sessions", s["id"])
+        audit(conn, "auth.change_password", user=user)
     logger.info("用户自助改密成功：username=%s", user.get("username"))
     return ok({"id": user["id"]})

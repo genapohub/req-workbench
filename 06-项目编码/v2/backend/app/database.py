@@ -6,7 +6,7 @@ from pathlib import Path
 
 from app.config import DATA, DB
 
-TABLES = ["users", "roles", "projects", "requirements", "sessions"]
+TABLES = ["users", "roles", "projects", "requirements", "sessions", "audit_logs"]
 
 
 @contextmanager

@@ -8,6 +8,7 @@ from app.database import db, row, put
 from app.deps import current_user, role_permissions
 from app.resp import ok, fail
 from app.schemas import RequirementIn, RequirementPatch, ClarificationIn, EvidenceIn
+from app.audit import record as audit, changed_fields
 from app.analysis import (
     enrich_requirement, visible_requirements, get_requirement_for_user,
     auto_analyze_requirement, build_deep_dive_suggestions,
@@ -87,6 +88,8 @@ def create_requirement(body: RequirementIn, user: dict = Depends(current_user)):
             "updated_by": user["id"],
         }
         put(conn, "requirements", item)
+        audit(conn, "requirements.create", user=user, target_type="requirement", target_id=item["id"],
+              detail={"title": item["title"], "project_id": item["project_id"]})
         item = enrich_requirement(conn, item)
     return ok(item)
 
@@ -119,11 +122,16 @@ def patch_requirement(rid: str, body: RequirementPatch, user: dict = Depends(_ju
             return fail(3001, "标题不能为空", 422)
         if body.original is not None and not body.original.strip():
             return fail(3001, "用户原话不能为空", 422)
-        for k, v in body.model_dump(exclude_none=True).items():
+        patch = body.model_dump(exclude_none=True)
+        diff = changed_fields(item, patch)
+        for k, v in patch.items():
             item[k] = v
         item["updated_at"] = now()
         item["updated_by"] = user["id"]
         put(conn, "requirements", item)
+        if diff:
+            audit(conn, "requirements.review", user=user, target_type="requirement", target_id=rid,
+                  detail={"title": item.get("title"), "changed": diff})
         item = enrich_requirement(conn, item)
     return ok(item)
 
@@ -214,4 +222,6 @@ def export_markdown(rid: str, user: dict = Depends(current_user)):
         item = get_requirement_for_user(conn, rid, user)
         project = row(conn, "projects", item.get("project_id"))
         md = render_requirement_markdown(enrich_requirement(conn, item), project)
+        audit(conn, "requirements.export", user=user, target_type="requirement", target_id=rid,
+              detail={"title": item.get("title")})
     return PlainTextResponse(md, media_type="text/markdown; charset=utf-8")

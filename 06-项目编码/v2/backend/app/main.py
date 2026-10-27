@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from app.database import init_db
 from app.seed import bootstrap
 from app.resp import AppError
-from app.routers import auth, overview, projects, requirements, users, public
+from app.routers import auth, overview, projects, requirements, users, public, audit
 
 app = FastAPI(title="需求智能工作台 v2", version="2.0.0")
 
@@ -59,3 +59,4 @@ app.include_router(projects.router, prefix="/api")
 app.include_router(requirements.router, prefix="/api")
 app.include_router(users.router, prefix="/api")
 app.include_router(public.router, prefix="/api")
+app.include_router(audit.router, prefix="/api")

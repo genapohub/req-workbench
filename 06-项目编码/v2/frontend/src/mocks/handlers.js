@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw'
 
 const PERMISSIONS = {
-  admin: ['overview.view','projects.view','projects.manage','requirements.view','requirements.create','requirements.analyze','requirements.review','requirements.export','users.view','users.manage'],
+  admin: ['overview.view','projects.view','projects.manage','requirements.view','requirements.create','requirements.analyze','requirements.review','requirements.export','users.view','users.manage','audit.view'],
   pm: ['overview.view','projects.view','projects.manage','requirements.view','requirements.create','requirements.analyze','requirements.review','requirements.export','users.view','users.manage'],
   staff: ['overview.view','projects.view','requirements.view','requirements.create'],
   tech: ['overview.view','projects.view','requirements.view','requirements.review'],
@@ -256,6 +256,7 @@ const store = {
       status: 'deferred' }),
   ],
   sessions: [],
+  audit_logs: [],
 }
 
 const ok = (data) => HttpResponse.json({ code: 0, data, message: 'ok' })
@@ -317,9 +318,10 @@ function autoAnalyze(item) { const ev = item.evidence || []; const support = ev.
 
 export const handlers = [
   http.get('/api/healthz', () => ok({ service: '需求智能工作台 v2', status: 'ok' })),
-  http.post('/api/auth/login', async ({ request }) => { const { username, password } = await request.json(); const u = store.users.find((x) => x.username === username); if (!u || u.password !== password) return fail(1002, '账号或密码错误', 401); if (u.status === 'disabled') return fail(1003, '账号已禁用', 403); const sid = `mock-${u.id}-${uid('sess')}`; activeSessionId = sid; store.sessions.push({ id: sid, user_id: u.id, expires: now() + 7 * 86400 }); return new HttpResponse(JSON.stringify({ code: 0, data: { token: sid, user: pubUser(u) }, message: 'ok' }), { status: 200, headers: { 'Content-Type': 'application/json', 'Set-Cookie': `workbench_session=${sid}; HttpOnly; Path=/; Max-Age=604800; SameSite=Lax` } }) }),
+  http.post('/api/auth/login', async ({ request }) => { const { username, password } = await request.json(); const u = store.users.find((x) => x.username === username); if (!u || u.password !== password) { store.audit_logs.push({ id: uid('audit'), user_id: '', username, action: 'auth.login_failed', target_type: '', target_id: '', detail: {}, created_at: now() }); return fail(1002, '账号或密码错误', 401) } if (u.status === 'disabled') return fail(1003, '账号已禁用', 403); const sid = `mock-${u.id}-${uid('sess')}`; activeSessionId = sid; store.sessions.push({ id: sid, user_id: u.id, expires: now() + 7 * 86400 }); store.audit_logs.push({ id: uid('audit'), user_id: u.id, username, action: 'auth.login', target_type: '', target_id: '', detail: {}, created_at: now() }); return new HttpResponse(JSON.stringify({ code: 0, data: { token: sid, user: pubUser(u) }, message: 'ok' }), { status: 200, headers: { 'Content-Type': 'application/json', 'Set-Cookie': `workbench_session=${sid}; HttpOnly; Path=/; Max-Age=604800; SameSite=Lax` } }) }),
   http.post('/api/auth/logout', ({ request }) => { const sid = getCookie(request, 'workbench_session'); if (sid) store.sessions = store.sessions.filter((s) => s.id !== sid); activeSessionId = ''; return new HttpResponse(JSON.stringify({ code: 0, data: {}, message: 'ok' }), { status: 200, headers: { 'Content-Type': 'application/json', 'Set-Cookie': 'workbench_session=; HttpOnly; Path=/; Max-Age=0' } }) }),
   http.get('/api/auth/me', ({ request }) => { const u = checkLogin(request); if (u instanceof HttpResponse) return u; const perms = rolePerms(u); return ok({ user: pubUser(u), permissions: perms, menus: menusOf(perms) }) }),
+  http.get('/api/audit-logs', ({ request }) => { const u = checkLogin(request); if (u instanceof HttpResponse) return u; if (!rolePerms(u).includes('audit.view')) return fail(1003, '无权限：缺少 audit.view', 403); const url = new URL(request.url); let items = [...(store.audit_logs || [])]; const action = url.searchParams.get('action'); if (action) items = items.filter((i) => i.action === action); items.sort((a, b) => b.created_at - a.created_at); return ok({ items, total: items.length }) }),
   http.post('/api/auth/change-password', async ({ request }) => { const u = checkLogin(request); if (u instanceof HttpResponse) return u; const b = await request.json(); if (u.password !== b.old_password) return fail(1002, '原密码错误', 401); if (!b.new_password || b.new_password.length < 8 || !/[a-zA-Z]/.test(b.new_password) || !/\d/.test(b.new_password)) return fail(3001, '新密码至少 8 位且需包含字母和数字', 422); if (b.new_password === b.old_password) return fail(3001, '新密码不能与原密码相同', 422); u.password = b.new_password; u.must_change_password = false; return ok({ id: u.id }) }),
 
   http.get('/api/users', ({ request }) => { const u = checkLogin(request); if (u instanceof HttpResponse) return u; if (!rolePerms(u).includes('users.view')) return fail(1003, '无权限', 403); return ok({ items: store.users.map(pubUser), roles: roleItems(), total: store.users.length }) }),
