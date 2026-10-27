@@ -7,10 +7,11 @@ import './styles/tokens.css'
 import './styles/overrides.css'
 import App from './App.vue'
 import router from './router'
-import { startMock } from './mocks/browser'
 import { setApiGate } from './api/gate'
 
-const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false'
+// Mock 仅限开发环境：生产构建（DEV=false）时该分支为死代码，
+// Rollup 会连同动态导入一起剔除，产物中不含 MSW 与任何演示数据。
+const USE_MOCK = import.meta.env.DEV && import.meta.env.VITE_USE_MOCK !== 'false'
 
 function escapeHtml(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -128,6 +129,7 @@ function mountApp(retries) {
 
 async function bootstrap() {
   if (USE_MOCK) {
+    const { startMock } = await import('./mocks/browser')
     const timeout = new Promise((resolve) => setTimeout(() => resolve('timeout'), 10000))
     const gate = Promise.race([
       startMock()

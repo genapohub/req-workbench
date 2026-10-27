@@ -61,6 +61,23 @@ export const METHOD_STATUS = {
   missing: { label: '待补充', tone: 'warning' },
 }
 
+/** 审计日志动作 */
+export const AUDIT_ACTION = {
+  'auth.login':           { label: '登录成功',   tone: 'info'    },
+  'auth.login_failed':    { label: '登录失败',   tone: 'danger'  },
+  'auth.logout':          { label: '退出登录',   tone: 'neutral' },
+  'auth.change_password': { label: '修改密码',   tone: 'warning' },
+  'users.create':         { label: '新增账号',   tone: 'success' },
+  'users.update':         { label: '编辑账号',   tone: 'warning' },
+  'users.delete':         { label: '删除账号',   tone: 'danger'  },
+  'projects.create':      { label: '新建项目',   tone: 'success' },
+  'projects.update':      { label: '编辑基座',   tone: 'warning' },
+  'requirements.create':  { label: '提交需求',   tone: 'success' },
+  'requirements.review':  { label: '评审变更',   tone: 'warning' },
+  'requirements.export':  { label: '导出需求卡', tone: 'info'    },
+  'public.submit':        { label: '公开提需',   tone: 'success' },
+}
+
 // ---------- 取值辅助 ----------
 
 /** 取显示文案；未登记时回退原始值，避免空白 */
@@ -89,3 +106,4 @@ export const AUTHENTICITY_OPTIONS = optionsOf(AUTHENTICITY)
 export const PRIORITY_OPTIONS = optionsOf(PRIORITY)
 export const RELEVANCE_OPTIONS = optionsOf(RELEVANCE)
 export const ACCOUNT_STATUS_OPTIONS = optionsOf(ACCOUNT_STATUS)
+export const AUDIT_ACTION_OPTIONS = optionsOf(AUDIT_ACTION)

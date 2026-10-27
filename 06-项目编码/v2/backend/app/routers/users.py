@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import secrets
+
 from fastapi import APIRouter, Depends
 
 from app.config import now, uid
@@ -7,6 +9,7 @@ from app.database import db, row, rows, put, delete
 from app.deps import require_perm, hash_password, public_user
 from app.resp import ok, fail
 from app.schemas import UserIn, UserPatch
+from app.audit import record as audit, changed_fields
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -33,6 +36,8 @@ def create_user(body: UserIn, user: dict = Depends(require_perm("users.manage"))
         if _username_exists(conn, username):
             return fail(2002, "账号已存在", 409)
         t = now()
+        # 未指定密码时随机生成初始密码，仅在本次响应中返回一次；首次登录强制改密
+        initial_password = body.password or ("Wb!" + secrets.token_urlsafe(9))
         item = {
             "id": uid(),
             "username": username,
@@ -40,13 +45,19 @@ def create_user(body: UserIn, user: dict = Depends(require_perm("users.manage"))
             "department_id": body.department_id or "",
             "role_ids": body.role_ids or ["pm"],
             "status": body.status,
-            "password": hash_password(body.password or "Workbench2026!"),
+            "password": hash_password(initial_password),
+            "must_change_password": True,
             "created_at": t,
             "updated_at": t,
             "updated_by": user.get("id"),
         }
         put(conn, "users", item)
-    return ok(public_user(item))
+        audit(conn, "users.create", user=user, target_type="user", target_id=item["id"],
+              detail={"username": username, "name": name, "role_ids": item["role_ids"]})
+    data = public_user(item)
+    if not body.password:
+        data["initial_password"] = initial_password
+    return ok(data)
 
 
 @router.put("/{user_id}")
@@ -56,6 +67,9 @@ def update_user(user_id: str, body: UserPatch, user: dict = Depends(require_perm
         if not item:
             return fail(2001, "账号不存在", 404)
         data = body.model_dump(exclude_none=True)
+        diff = changed_fields(item, {k: v for k, v in data.items() if k != "password"})
+        if "password" in data:
+            diff["password"] = ["（旧密码）", "（已重置）"]
         if "username" in data:
             data["username"] = data["username"].strip()
             if not data["username"]:
@@ -69,12 +83,16 @@ def update_user(user_id: str, body: UserPatch, user: dict = Depends(require_perm
         if "password" in data:
             if data["password"]:
                 data["password"] = hash_password(data["password"])
+                # 管理员重置密码后，该账号首次登录强制改密
+                data["must_change_password"] = True
             else:
                 data.pop("password")
         item.update(data)
         item["updated_at"] = now()
         item["updated_by"] = user.get("id")
         put(conn, "users", item)
+        audit(conn, "users.update", user=user, target_type="user", target_id=user_id,
+              detail={"username": item.get("username"), "changed": diff})
     return ok(public_user(item))
 
 
@@ -83,7 +101,10 @@ def delete_user(user_id: str, user: dict = Depends(require_perm("users.manage"))
     if user_id == user.get("id"):
         return fail(3001, "不能删除当前登录账号", 422)
     with db() as conn:
-        if not row(conn, "users", user_id):
+        target = row(conn, "users", user_id)
+        if not target:
             return fail(2001, "账号不存在", 404)
         delete(conn, "users", user_id)
+        audit(conn, "users.delete", user=user, target_type="user", target_id=user_id,
+              detail={"username": target.get("username"), "name": target.get("name")})
     return ok({"id": user_id})

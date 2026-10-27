@@ -36,6 +36,9 @@
 
         <template #dropdown>
           <el-dropdown-menu>
+            <el-dropdown-item command="change-password" :icon="Lock">
+              修改密码
+            </el-dropdown-item>
             <el-dropdown-item command="logout" :icon="SwitchButton">
               退出登录
             </el-dropdown-item>
@@ -53,7 +56,7 @@ defineOptions({ name: 'AppTopbar' })
 
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
-import { SwitchButton, ArrowDown, Fold, Expand } from '@element-plus/icons-vue'
+import { SwitchButton, ArrowDown, Fold, Expand, Lock } from '@element-plus/icons-vue'
 
 const props = defineProps({
   /** 当前用户对象，需含 name */
@@ -66,7 +69,7 @@ const props = defineProps({
   collapsed: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['logout', 'toggle-sidebar'])
+const emit = defineEmits(['logout', 'toggle-sidebar', 'change-password'])
 
 const displayName = computed(() => props.user?.name || '未登录')
 const initial = computed(() => displayName.value.charAt(0) || '?')
@@ -76,6 +79,7 @@ const triggerIcon = computed(() => (props.collapsed ? Expand : Fold))
 
 function onCommand(cmd) {
   if (cmd === 'logout') emit('logout')
+  if (cmd === 'change-password') emit('change-password')
 }
 </script>
 

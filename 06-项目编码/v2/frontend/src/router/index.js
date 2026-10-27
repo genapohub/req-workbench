@@ -10,6 +10,7 @@ const routes = [
   { path: '/projects', name: 'projects', component: () => import('../views/Projects.vue') },
   { path: '/requirements', name: 'requirements', component: () => import('../views/Requirements.vue') },
   { path: '/users', name: 'users', component: () => import('../views/Users.vue') },
+  { path: '/audit-logs', name: 'audit-logs', component: () => import('../views/AuditLogs.vue') },
   { path: '/:pathMatch(.*)*', redirect: '/overview' },
 ]
 

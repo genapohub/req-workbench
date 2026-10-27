@@ -4,7 +4,8 @@
     :title="title"
     :width="width"
     :close-on-click-modal="false"
-    :close-on-press-escape="!loading"
+    :close-on-press-escape="!loading && closable"
+    :show-close="closable"
     class="wb-form-dialog"
     @update:model-value="onUpdateModelValue"
   >
@@ -15,7 +16,7 @@
 
     <template #footer>
       <slot name="footer">
-        <el-button :disabled="loading" @click="close">{{ cancelText }}</el-button>
+        <el-button v-if="closable" :disabled="loading" @click="close">{{ cancelText }}</el-button>
         <el-button
           type="primary"
           :loading="loading"
@@ -42,6 +43,8 @@ const props = defineProps({
   loading: { type: Boolean, default: false },
   /** 提交按钮禁用（如基座不完整时不允许提交需求） */
   disabled: { type: Boolean, default: false },
+  /** 是否允许关闭（强制改密场景传 false：隐藏 X 与取消、禁 ESC） */
+  closable: { type: Boolean, default: true },
   confirmText: { type: String, default: '保存' },
   cancelText: { type: String, default: '取消' },
 })

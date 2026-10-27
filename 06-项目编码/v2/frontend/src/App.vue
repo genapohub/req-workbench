@@ -20,6 +20,7 @@
           :collapsed="collapsed"
           @toggle-sidebar="toggleSidebar"
           @logout="logout"
+          @change-password="pwdDialog = true"
         />
         <main class="wb-content">
           <!-- 轻量页面切换过渡：克制动效，不做位移回弹 -->
@@ -28,6 +29,13 @@
           </transition>
         </main>
       </div>
+
+      <!-- 自助改密：用户菜单入口；must_change_password 时强制弹出且不可关闭 -->
+      <ChangePasswordDialog
+        v-model="pwdVisible"
+        :forced="mustChangePassword"
+        @changed="onPasswordChanged"
+      />
     </div>
   </router-view>
 </template>
@@ -42,7 +50,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import AppSidebar from './components/AppSidebar.vue'
 import AppTopbar from './components/AppTopbar.vue'
-import { session, clearSession } from './store/session'
+import ChangePasswordDialog from './components/ChangePasswordDialog.vue'
+import { session, clearSession, setSession } from './store/session'
 import client from './api/client'
 
 const route = useRoute()
@@ -52,6 +61,22 @@ const COLLAPSE_KEY = 'wb_sidebar_collapsed'
 
 const collapsed = ref(localStorage.getItem(COLLAPSE_KEY) === '1')
 const mobileOpen = ref(false)
+const pwdDialog = ref(false)
+
+/** 初始密码首登强制改密：会话用户带 must_change_password 标记时弹窗常开 */
+const mustChangePassword = computed(() => Boolean(session.user?.must_change_password))
+const pwdVisible = computed({
+  get: () => pwdDialog.value || mustChangePassword.value,
+  set: (v) => {
+    if (!mustChangePassword.value) pwdDialog.value = v
+  },
+})
+
+function onPasswordChanged() {
+  if (!session.user) return
+  setSession({ ...session, user: { ...session.user, must_change_password: false } })
+  pwdDialog.value = false
+}
 
 /** 与侧边栏抽屉断点保持一致（768px） */
 const mql = window.matchMedia('(max-width: 768px)')

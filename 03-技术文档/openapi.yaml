@@ -25,6 +25,39 @@ paths:
       summary: 当前用户、权限和菜单
       responses:
         '200': { description: ok }
+  /auth/change-password:
+    post:
+      summary: 自助修改密码（登录态；校验原密码 + 强度，改后失效其它会话）
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [old_password, new_password]
+              properties:
+                old_password: { type: string }
+                new_password: { type: string, description: 至少 8 位且含字母和数字，不能与原密码或账号相同 }
+      responses:
+        '200': { description: ok }
+        '401': { description: 未登录（1001）或原密码错误（1002） }
+        '422': { description: 新密码强度不足或与原密码相同（3001） }
+  /audit-logs:
+    get:
+      summary: 审计日志查询（audit.view，仅 admin；支持 action/username 筛选与 limit）
+      parameters:
+        - in: query
+          name: action
+          schema: { type: string }
+        - in: query
+          name: username
+          schema: { type: string }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 100, maximum: 500 }
+      responses:
+        '200': { description: ok }
+        '403': { description: 无权限（1003） }
   /dashboard:
     get:
       summary: 工作概览
@@ -102,4 +135,90 @@ paths:
       summary: 导出需求卡 Markdown
       responses:
         '200': { description: markdown }
+  /public/projects/{project_id}/form:
+    get:
+      summary: 公开提需表单信息（无需登录，回显项目名与基座状态）
+      parameters:
+        - in: path
+          name: project_id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: ok }
+        '404': { description: 项目不存在（code 2001） }
+  /public/projects/{project_id}/requirements:
+    post:
+      summary: 公开提交需求原话（无需登录，生成草稿需求；基座不完整返回 3001）
+      parameters:
+        - in: path
+          name: project_id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, original]
+              properties:
+                title: { type: string, description: 标题 }
+                original: { type: string, description: 用户原话 }
+                scenario: { type: string, description: 发生场景 }
+                problem: { type: string, description: 真实问题 }
+                impact: { type: string, description: 影响说明 }
+                submitter_name: { type: string, description: 提交人姓名 }
+                submitter_department: { type: string, description: 提交人部门 }
+      responses:
+        '200': { description: ok }
+        '404': { description: 项目不存在（code 2001） }
+        '422': { description: 基座不完整或参数校验失败（code 3001） }
+  /users:
+    get:
+      summary: 账号列表和角色选项（users.view）
+      responses:
+        '200': { description: ok }
+    post:
+      summary: 新增账号（users.manage；不传密码时默认初始密码）
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, name]
+              properties:
+                username: { type: string }
+                name: { type: string }
+                department_id: { type: string }
+                role_ids: { type: array, items: { type: string }, default: [pm] }
+                status: { type: string, enum: [active, disabled], default: active }
+                password: { type: string }
+      responses:
+        '200': { description: ok }
+        '409': { description: 账号已存在（code 2002） }
+        '422': { description: 参数校验失败（code 3001） }
+  /users/{user_id}:
+    put:
+      summary: 编辑账号、角色、部门、状态、密码（users.manage）
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: ok }
+        '404': { description: 账号不存在（code 2001） }
+        '409': { description: 账号已存在（code 2002） }
+    delete:
+      summary: 删除账号（users.manage；禁止删除当前登录账号）
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: ok }
+        '404': { description: 账号不存在（code 2001） }
+        '422': { description: 不能删除当前登录账号（code 3001） }
 components: {}

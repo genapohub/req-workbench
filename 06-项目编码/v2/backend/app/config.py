@@ -32,6 +32,7 @@ PERMISSIONS: dict[str, str] = {
     "requirements.export": "需求导出",
     "users.view": "查看账号",
     "users.manage": "管理账号",
+    "audit.view": "查看审计日志",
 }
 
 MENUS = [
@@ -39,6 +40,7 @@ MENUS = [
     {"id": "requirements", "label": "需求挖掘", "permission": "requirements.view"},
     {"id": "projects", "label": "基座信息", "permission": "projects.view"},
     {"id": "users", "label": "账号管理", "permission": "users.view"},
+    {"id": "audit-logs", "label": "审计日志", "permission": "audit.view"},
 ]
 
 ROLE_DEFAULTS = {

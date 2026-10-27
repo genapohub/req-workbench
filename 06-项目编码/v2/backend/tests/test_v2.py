@@ -5,6 +5,7 @@ import uuid
 
 _TMP = tempfile.mkdtemp(prefix="wb_v2_test_")
 os.environ["WORKBENCH_DATA_DIR"] = _TMP
+os.environ.setdefault("WORKBENCH_INIT_PASSWORD", "Workbench2026!")
 
 from fastapi.testclient import TestClient  # noqa: E402
 from app.main import app  # noqa: E402
@@ -70,7 +71,7 @@ def test_login_and_menus_are_narrow(client):
     auth(client, "admin")
     body = client.get("/api/auth/me").json()["data"]
     labels = {m["label"] for m in body["menus"]}
-    assert labels == {"工作概览", "基座信息", "需求挖掘", "账号管理"}
+    assert labels == {"工作概览", "基座信息", "需求挖掘", "账号管理", "审计日志"}
     assert "versions.view" not in body["permissions"]
     assert "requirements.schedule" not in body["permissions"]
 

@@ -6,6 +6,7 @@ import uuid
 
 _TMP = tempfile.mkdtemp(prefix="wb_v2_acc_")
 os.environ["WORKBENCH_DATA_DIR"] = _TMP
+os.environ.setdefault("WORKBENCH_INIT_PASSWORD", "Workbench2026!")
 
 from fastapi.testclient import TestClient  # noqa: E402
 from app.main import app  # noqa: E402

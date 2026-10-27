@@ -6,6 +6,7 @@ from app.config import now, uid
 from app.database import db, row, put
 from app.resp import ok, fail
 from app.schemas import PublicRequirementIn
+from app.audit import record as audit
 from app.analysis import project_base_complete, project_base_message, enrich_project_base
 
 router = APIRouter(prefix="/public", tags=["public"] )
@@ -83,4 +84,7 @@ def submit_project_requirement(project_id: str, body: PublicRequirementIn):
             "updated_by": "public_form",
         }
         put(conn, "requirements", item)
+        audit(conn, "public.submit", username=body.submitter_name or "公开表单提交人",
+              target_type="requirement", target_id=item["id"],
+              detail={"title": item["title"], "project_id": project_id})
     return ok({"id": item["id"], "status": item["status"], "message": "需求已提交，PM 会在后台继续挖掘和评审。"})
