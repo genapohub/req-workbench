@@ -59,6 +59,8 @@ def base_endorsements(conn, item: dict, limit: int = 3) -> list[dict]:
 
     定位：只作为「历史上确认过同类需求」的证据线索，供 PM 参考，
     绝不替代人工判断，也不自动改写任何基座字段（基座字段仍由人维护）。
+    词面重合不足时，若启用了 LLM（WORKBENCH_LM_API_KEY），追加一次语义匹配兜底，
+    命中条目标记 source=ai 展示为「AI 建议」（仅在响应时计算，不落库）。
     """
     current = _tokens(_req_text(item))
     if not current:
@@ -78,9 +80,85 @@ def base_endorsements(conn, item: dict, limit: int = 3) -> list[dict]:
             "shared_terms": sorted(shared)[:6],
             "overlap": len(shared),
             "overlap_level": "high" if len(shared) >= 3 else "medium",
+            "source": "lexical",
         })
     out.sort(key=lambda x: -x["overlap"])
-    return out[:limit]
+    results = out[:limit]
+    if len(results) < limit:
+        results += _semantic_endorsements(conn, item, exclude={r["id"] for r in results},
+                                          limit=limit - len(results))
+    return results
+
+
+def _semantic_endorsements(conn, item: dict, exclude: set, limit: int) -> list[dict]:
+    """LLM 语义兜底：词面重合为空/不足时，让模型判断候选与当前需求是否语义同类。
+    只影响展示层的背书线索，不参与真实性/相关性/优先级结论（判断层红线）。"""
+    from app.llm import chat, enabled, extract_json_array
+
+    if limit <= 0 or not enabled():
+        return []
+    candidates = [r for r in endorsable_requirements(conn, item) if r.get("id") not in exclude][:10]
+    if not candidates:
+        return []
+    numbered = "\n".join(
+        f"{i + 1}. {c.get('title', '')}｜{c.get('problem', '') or c.get('original', '')}"
+        for i, c in enumerate(candidates)
+    )
+    content = chat([
+        {"role": "system", "content": "你是需求分析助手。判断候选历史需求与当前需求是否在语义上指向同一类业务问题（词面可以完全不同）。只输出 JSON 数组，元素为 {\"index\": 序号, \"reason\": \"一句话理由\"}；没有语义同类的就输出 []。"},
+        {"role": "user", "content": f"当前需求：{_req_text(item)}\n\n候选历史需求：\n{numbered}"},
+    ], purpose="base_endorsements.semantic", conn=conn)
+    out = []
+    for hit in extract_json_array(content):
+        try:
+            idx = int(hit.get("index")) - 1
+        except Exception:
+            continue
+        if not (0 <= idx < len(candidates)):
+            continue
+        c = candidates[idx]
+        out.append({
+            "id": c.get("id"),
+            "title": c.get("title", ""),
+            "status": c.get("status", ""),
+            "status_label": STATUS_LABELS.get(c.get("status"), c.get("status", "")),
+            "priority": c.get("priority", ""),
+            "problem": c.get("problem", "") or c.get("original", ""),
+            "shared_terms": [],
+            "overlap": 0,
+            "overlap_level": "semantic",
+            "source": "ai",
+            "ai_reason": str(hit.get("reason", ""))[:100],
+        })
+        if len(out) >= limit:
+            break
+    return out
+
+
+def llm_deep_dive_suggestions(conn, item: dict, project: dict | None, limit: int = 3) -> list[dict]:
+    """LLM 追问建议（增强层）：针对原话/场景/问题生成具体追问，标注 source=ai。
+    仅在响应时追加，不落库；未启用或失败返回 []，调用方回退纯规则建议。"""
+    from app.llm import chat, enabled, extract_json_array
+
+    if not enabled():
+        return []
+    content = chat([
+        {"role": "system", "content": "你是需求挖掘助手。根据员工原话与已有场景/问题/影响，提出最缺的追问（帮 PM 验证真实性、量化影响、确认业务相关性）。只输出 JSON 字符串数组，最多 3 条，每条一句具体问题。"},
+        {"role": "user", "content": (
+            f"标题：{item.get('title', '')}\n原话：{item.get('original', '')}\n"
+            f"场景：{item.get('scenario', '')}\n问题：{item.get('problem', '')}\n"
+            f"影响：{item.get('impact', '')}\n"
+            f"项目基座：{(project or {}).get('company_business', '')}｜{(project or {}).get('progress', '')}"
+        )},
+    ], purpose="deep_dive.suggestions", conn=conn)
+    out = []
+    for q in extract_json_array(content):
+        text = str(q).strip()
+        if text:
+            out.append({"type": "AI 追问", "text": text, "source": "ai"})
+        if len(out) >= limit:
+            break
+    return out
 
 
 def useful_text(value) -> bool:

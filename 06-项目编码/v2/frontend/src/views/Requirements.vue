@@ -297,10 +297,14 @@
             <div class="endorse__head">
               <b class="endorse__title">{{ e.title }}</b>
               <StatusTag :label="labelOf(STATUS, e.status)" :tone="toneOf(STATUS, e.status)" size="sm" />
-              <StatusTag v-if="e.overlap_level === 'high'" label="疑似同类" tone="warning" size="sm" />
+              <StatusTag v-if="e.source === 'ai'" label="AI 建议" tone="info" size="sm" />
+              <StatusTag v-else-if="e.overlap_level === 'high'" label="疑似同类" tone="warning" size="sm" />
             </div>
             <p class="endorse__problem">{{ e.problem }}</p>
-            <p class="endorse__reason">
+            <p v-if="e.source === 'ai'" class="endorse__reason">
+              AI 语义匹配（非词面重合）：{{ e.ai_reason || '语义上指向同类业务问题' }}——仅供 PM 参考，不构成判断结论。
+            </p>
+            <p v-else class="endorse__reason">
               本项目已确认投入，与本次需求重合 {{ e.overlap }} 个业务词：<span class="wb-num">{{ (e.shared_terms || []).join('、') }}</span>
             </p>
           </div>
@@ -351,9 +355,12 @@
             <el-button size="small" :icon="Promotion" @click="deepDive">生成追问建议</el-button>
           </template>
         </SectionTitle>
-        <div v-if="detail.deep_dive_suggestions?.length" class="suggestion-list">
-          <div v-for="(s, i) in detail.deep_dive_suggestions" :key="i" class="suggestion">
+        <div v-if="detail.deep_dive_suggestions?.length || detail.ai_suggestions?.length" class="suggestion-list">
+          <div v-for="(s, i) in detail.deep_dive_suggestions || []" :key="'r' + i" class="suggestion">
             {{ s.text }}
+          </div>
+          <div v-for="(s, i) in detail.ai_suggestions || []" :key="'a' + i" class="suggestion suggestion--ai">
+            <StatusTag label="AI 建议" tone="info" size="sm" /> {{ s.text }}
           </div>
         </div>
         <p v-else class="wb-drawer-empty">暂无建议，点击右上角「生成追问建议」。</p>
@@ -1129,6 +1136,15 @@ async function addClarification() {
   font-size: var(--wb-fs-xs);
   line-height: var(--wb-lh-sm);
   color: var(--wb-text);
+}
+
+/* AI 建议（LLM 增强层）：与规则建议视觉区分，只作参考 */
+.suggestion--ai {
+  background: var(--wb-info-bg, rgba(83, 157, 245, .14));
+  border-left-color: var(--wb-info, #539df5);
+  display: flex;
+  align-items: baseline;
+  gap: var(--wb-sp-2);
 }
 
 .evidence-list {

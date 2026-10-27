@@ -11,7 +11,7 @@ from app.schemas import RequirementIn, RequirementPatch, ClarificationIn, Eviden
 from app.audit import record as audit, changed_fields
 from app.analysis import (
     enrich_requirement, visible_requirements, get_requirement_for_user,
-    auto_analyze_requirement, build_deep_dive_suggestions,
+    auto_analyze_requirement, build_deep_dive_suggestions, llm_deep_dive_suggestions,
     render_requirement_markdown, build_timeline, project_base_complete, project_base_message,
 )
 
@@ -213,6 +213,9 @@ def deep_dive(rid: str, user: dict = Depends(current_user)):
         item["updated_at"] = now()
         put(conn, "requirements", item)
         item = enrich_requirement(conn, item)
+        # 增强层：LLM 追问建议只在响应时追加（不落库），标注 source=ai；
+        # 未配置 WORKBENCH_LM_API_KEY 时返回空数组，纯规则建议行为不变。
+        item["ai_suggestions"] = llm_deep_dive_suggestions(conn, item, project)
     return ok(item)
 
 
