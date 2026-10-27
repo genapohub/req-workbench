@@ -1,8 +1,14 @@
 from __future__ import annotations
 
+import logging
+import os
+import secrets
+
 from app.config import ROLE_DEFAULTS, now, uid
 from app.database import db, row, rows, put
 from app.deps import hash_password
+
+logger = logging.getLogger("workbench.seed")
 
 
 def default_project() -> dict:
@@ -80,12 +86,19 @@ def bootstrap():
                 "permissions": permissions,
             })
         if not rows(conn, "users"):
-            pwd = hash_password("Workbench2026!")
+            # 初始密码：优先取环境变量 WORKBENCH_INIT_PASSWORD（部署时注入）；
+            # 未注入则随机生成并打印到服务端日志（只出现这一次，不入库不入仓）。
+            # 初始账号一律标记 must_change_password，首次登录强制改密。
+            init_pwd = os.environ.get("WORKBENCH_INIT_PASSWORD")
+            if not init_pwd:
+                init_pwd = "Wb!" + secrets.token_urlsafe(9)
+                logger.warning("未设置 WORKBENCH_INIT_PASSWORD，本次初始账号随机密码（仅此一次打印）：%s", init_pwd)
+            pwd = hash_password(init_pwd)
             for item in [
-                {"id": "admin", "username": "admin", "name": "管理员", "department_id": "dept-tech", "role_ids": ["admin"], "status": "active", "password": pwd},
-                {"id": "product", "username": "product", "name": "陈思 · 需求负责人", "department_id": "dept-ops", "role_ids": ["pm"], "status": "active", "password": pwd},
-                {"id": "employee", "username": "employee", "name": "林晓 · 提出人", "department_id": "dept-ops", "role_ids": ["staff"], "status": "active", "password": pwd},
-                {"id": "engineer", "username": "engineer", "name": "周远 · 技术评估", "department_id": "dept-tech", "role_ids": ["tech"], "status": "active", "password": pwd},
+                {"id": "admin", "username": "admin", "name": "管理员", "department_id": "dept-tech", "role_ids": ["admin"], "status": "active", "password": pwd, "must_change_password": True},
+                {"id": "product", "username": "product", "name": "陈思 · 需求负责人", "department_id": "dept-ops", "role_ids": ["pm"], "status": "active", "password": pwd, "must_change_password": True},
+                {"id": "employee", "username": "employee", "name": "林晓 · 提出人", "department_id": "dept-ops", "role_ids": ["staff"], "status": "active", "password": pwd, "must_change_password": True},
+                {"id": "engineer", "username": "engineer", "name": "周远 · 技术评估", "department_id": "dept-tech", "role_ids": ["tech"], "status": "active", "password": pwd, "must_change_password": True},
             ]:
                 put(conn, "users", item)
         if not rows(conn, "projects"):

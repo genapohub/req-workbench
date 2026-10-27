@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import secrets
+
 from fastapi import APIRouter, Depends
 
 from app.config import now, uid
@@ -33,6 +35,8 @@ def create_user(body: UserIn, user: dict = Depends(require_perm("users.manage"))
         if _username_exists(conn, username):
             return fail(2002, "账号已存在", 409)
         t = now()
+        # 未指定密码时随机生成初始密码，仅在本次响应中返回一次；首次登录强制改密
+        initial_password = body.password or ("Wb!" + secrets.token_urlsafe(9))
         item = {
             "id": uid(),
             "username": username,
@@ -40,13 +44,17 @@ def create_user(body: UserIn, user: dict = Depends(require_perm("users.manage"))
             "department_id": body.department_id or "",
             "role_ids": body.role_ids or ["pm"],
             "status": body.status,
-            "password": hash_password(body.password or "Workbench2026!"),
+            "password": hash_password(initial_password),
+            "must_change_password": True,
             "created_at": t,
             "updated_at": t,
             "updated_by": user.get("id"),
         }
         put(conn, "users", item)
-    return ok(public_user(item))
+    data = public_user(item)
+    if not body.password:
+        data["initial_password"] = initial_password
+    return ok(data)
 
 
 @router.put("/{user_id}")
@@ -69,6 +77,8 @@ def update_user(user_id: str, body: UserPatch, user: dict = Depends(require_perm
         if "password" in data:
             if data["password"]:
                 data["password"] = hash_password(data["password"])
+                # 管理员重置密码后，该账号首次登录强制改密
+                data["must_change_password"] = True
             else:
                 data.pop("password")
         item.update(data)

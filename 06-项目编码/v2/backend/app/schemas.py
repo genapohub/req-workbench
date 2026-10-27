@@ -9,6 +9,11 @@ class LoginIn(BaseModel):
     password: str
 
 
+class ChangePasswordIn(BaseModel):
+    old_password: str
+    new_password: str
+
+
 class ProjectIn(BaseModel):
     name: str
     company_business: Optional[str] = None

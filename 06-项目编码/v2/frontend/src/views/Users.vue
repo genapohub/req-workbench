@@ -110,7 +110,7 @@
             v-model="form.password"
             type="password"
             show-password
-            :placeholder="form.id ? '不填则不修改' : '默认 Workbench2026!'"
+            :placeholder="form.id ? '不填则不修改（填写后该账号首次登录需改密）' : '不填则随机生成，创建成功后展示一次'"
           />
         </el-form-item>
       </el-form>
@@ -188,10 +188,22 @@ async function save() {
   try {
     const payload = { ...form.value }
     if (!payload.password) delete payload.password
-    if (payload.id) await client.put(`/api/users/${payload.id}`, payload)
-    else await client.post('/api/users', payload)
+    if (payload.id) {
+      await client.put(`/api/users/${payload.id}`, payload)
+      ElMessage.success('账号已保存')
+    } else {
+      const created = await client.post('/api/users', payload)
+      if (created?.initial_password) {
+        ElMessageBox.alert(
+          `新账号「${created.username}」的初始密码：${created.initial_password}（仅展示这一次，请立即转交；该账号首次登录需修改密码）`,
+          '账号已创建',
+          { confirmButtonText: '我已记录', type: 'success' },
+        )
+      } else {
+        ElMessage.success('账号已保存')
+      }
+    }
     visible.value = false
-    ElMessage.success('账号已保存')
     await load()
   } catch (e) {
     /* 拦截器统一提示 */
