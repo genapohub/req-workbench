@@ -71,7 +71,7 @@ def test_login_and_menus_are_narrow(client):
     auth(client, "admin")
     body = client.get("/api/auth/me").json()["data"]
     labels = {m["label"] for m in body["menus"]}
-    assert labels == {"工作概览", "基座信息", "需求挖掘", "账号管理"}
+    assert labels == {"工作概览", "基座信息", "需求挖掘", "账号管理", "审计日志"}
     assert "versions.view" not in body["permissions"]
     assert "requirements.schedule" not in body["permissions"]
 

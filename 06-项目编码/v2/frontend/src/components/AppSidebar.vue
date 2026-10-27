@@ -44,7 +44,7 @@
 defineOptions({ name: 'AppSidebar' })
 
 import { RouterLink } from 'vue-router'
-import { Odometer, Files, List, User } from '@element-plus/icons-vue'
+import { Odometer, Files, List, User, Document } from '@element-plus/icons-vue'
 
 const props = defineProps({
   /** 菜单项：{ id, label }，id 同时作为路由路径 */
@@ -59,7 +59,7 @@ const props = defineProps({
   subtitle: { type: String, default: '问题 · 证据 · 取舍' },
 })
 
-const ICONS = { overview: Odometer, projects: Files, requirements: List, users: User }
+const ICONS = { overview: Odometer, projects: Files, requirements: List, users: User, 'audit-logs': Document }
 const iconOf = (id) => ICONS[id] || null
 
 /** 支持 /requirements?req=1 这类子路径仍高亮父菜单 */

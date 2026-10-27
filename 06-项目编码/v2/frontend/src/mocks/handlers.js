@@ -11,6 +11,7 @@ const MENUS = [
   { id: 'requirements', label: '需求挖掘', permission: 'requirements.view' },
   { id: 'projects', label: '基座信息', permission: 'projects.view' },
   { id: 'users', label: '账号管理', permission: 'users.view' },
+  { id: 'audit-logs', label: '审计日志', permission: 'audit.view' },
 ]
 const STATUS_LABELS = { draft: '草稿', clarifying: '澄清中', review: '待评审', pooled: '已入池', deferred: '暂缓', rejected: '不采纳' }
 let seq = 1
